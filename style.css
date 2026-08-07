@@ -131,7 +131,7 @@ h1,h2,h3,h4{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;l
   border-bottom:1px solid transparent;transition:box-shadow .35s var(--ease),border-color .35s,background .35s}
 .header.scrolled{background:rgba(255,255,255,.96);border-bottom-color:var(--line);box-shadow:var(--sh-xs)}
 .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:22px;height:74px;transition:height .35s var(--ease)}
-.nav>.brand{justify-self:start}
+.nav>.brand{justify-self:start;white-space:nowrap}
 .nav>.menu{justify-self:center}
 .nav>.nav-cta{justify-self:end}
 .header.scrolled .nav{height:64px}
@@ -168,7 +168,7 @@ h1,h2,h3,h4{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;l
 body.menu-open .burger span{background:transparent}
 body.menu-open .burger span::before{transform:translateY(6px) rotate(45deg)}
 body.menu-open .burger span::after{transform:translateY(-6px) rotate(-45deg)}
-@media (max-width:1000px){.menu,.nav-cta .btn-ghost,.nav-cta .btn-gold{display:none}.burger{display:inline-flex}}
+@media (max-width:1180px){.menu,.nav-cta .btn-ghost,.nav-cta .btn-gold{display:none}.burger{display:inline-flex}}
 
 .drawer{position:fixed;inset:0;z-index:55;visibility:hidden;pointer-events:none;overflow:hidden}
 .drawer .scrim{position:absolute;inset:0;background:rgba(12,24,52,.4);opacity:0;transition:opacity .4s var(--ease)}
