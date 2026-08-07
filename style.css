@@ -139,7 +139,7 @@ h1,h2,h3,h4{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;l
 .brand .bt b{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.28rem;letter-spacing:-.03em;color:var(--ink)}
 .brand .bt b i{font-style:normal;color:var(--gold-600)}
 .brand .bt span{font-size:.55rem;letter-spacing:.2em;color:var(--soft-ink);font-weight:700;margin-top:2px;text-transform:uppercase}
-.menu{display:flex;align-items:center;gap:2px}
+.menu{display:flex;align-items:center;gap:2px;flex:1;justify-content:center}
 .menu>li{position:relative}
 .menu>li>a,.menu>li>button{display:inline-flex;align-items:center;gap:.35em;padding:.6em .85em;border-radius:var(--r-sm);white-space:nowrap;
   font-size:.92rem;font-weight:600;color:var(--muted);transition:color .25s var(--ease),background .25s}

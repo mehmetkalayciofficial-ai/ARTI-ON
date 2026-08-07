@@ -12,8 +12,7 @@ Disallow: /admin.html
 Disallow: /admin-kurslar.html
 Disallow: /admin-kurs.html
 Disallow: /admin-paketler.html
+Disallow: /admin-toplantilar.html
 Disallow: /admin-uyeler.html
 
 Sitemap: https://www.arti10.com/sitemap.xml
-
-<!-- oto-deploy test: 313e66 -->
