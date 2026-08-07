@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Panelim | Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="app">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2><p>Üye paneli için tarayıcınızda JavaScript açık olmalı.</p></div>
+<div id="top"></div>
+<main class="app-main" id="main" hidden>
+  <section class="dash-hero">
+    <div class="greet" id="greet">Merhaba 👋</div>
+    <p>Eğitimlerine kaldığın yerden devam et. İşte güncel durumun.</p>
+    <div class="dash-stats" id="stats"></div>
+  </section>
+
+  <div id="subBanner"></div>
+  <div id="continueWrap"></div>
+
+  <div class="sec-title"><h2 id="myTitle">Eğitimlerim</h2></div>
+  <div id="myCourses"></div>
+
+  <div class="sec-title" id="kurslar" style="scroll-margin-top:80px"><h2>Tüm Eğitimler</h2></div>
+  <div class="ccards" id="allCourses"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAuth()) return;
+  var u=Auth.current(), S=Shell, $=function(s){return document.querySelector(s)};
+  $("#top").innerHTML=S.memberTop("panel"); S.wire();
+  $("#main").hidden=false;
+  $("#greet").textContent="Merhaba, "+u.name.split(" ")[0]+" 👋";
+  function svg(n){return S.svg(n)}
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  function cstat(c){var mins=c.lessons.reduce(function(m,l){var p=(l.dur||"0:0").split(":");return m+(+p[0])+(+p[1])/60;},0);return {n:c.lessons.length, h:(Math.round(mins/6)/10)};}
+  function coverStyle(c){return 'background:linear-gradient(150deg,'+c.accent+',#0c1730)';}
+  function minPkgFor(cid){
+    var pk=DB.packages().slice().sort(function(a,b){return a.priceMonthly-b.priceMonthly;}).find(function(p){return p.includedCourses.indexOf("all")>=0||p.includedCourses.indexOf(cid)>=0;});
+    return pk?pk.name:"Artı 10 Pro";
+  }
+
+  var pkg=DB.packageOf(u.id), sub=DB.subscription(u.id);
+  var accessIds=DB.accessibleCourseIds(u.id);
+  var accessible=accessIds.map(function(id){return DB.course(id)}).filter(Boolean);
+  var prog=DB.progress(u.id);
+
+  // subscription banner
+  if(sub && pkg){
+    $("#subBanner").innerHTML='<div class="sub-banner active"><span class="sb-ic" style="background:linear-gradient(140deg,'+pkg.accent+',#0c1730)">'+svg("crown")+'</span>'+
+      '<div class="sb-info"><b>'+esc(pkg.name)+' paketi aktif</b><span>'+(sub.period==="annual"?"Yıllık":"Aylık")+' abonelik · yenileme <span class="pp">'+S.fmtDate(sub.renewsAt)+'</span></span></div>'+
+      '<a class="btn btn-ghost" href="paketler.html">Paketi Yönet</a></div>';
+  } else {
+    $("#subBanner").innerHTML='<div class="sub-banner warn"><span class="sb-ic">'+svg("crown")+'</span>'+
+      '<div class="sb-info"><b>Eğitim paketlerimiz çok yakında</b><span>Erişim ve bilgi için bizimle iletişime geç. Her kursun ilk dersi ücretsiz izlenebilir.</span></div>'+
+      '<a class="btn btn-gold" href="https://wa.me/905333478580" target="_blank" rel="noopener">WhatsApp\'tan Yaz</a></div>';
+  }
+
+  // stats
+  var doneCount=Object.keys(prog).filter(function(k){return prog[k].completed}).length;
+  var totalH=Math.round(accessible.reduce(function(s,c){return s+cstat(c).h},0)*10)/10;
+  var avg=accessible.length?Math.round(accessible.reduce(function(s,c){return s+DB.courseProgress(u.id,c.id)},0)/accessible.length):0;
+  $("#stats").innerHTML=[
+    ["Erişimdeki eğitim",accessible.length],["Tamamlanan ders",doneCount],["Erişimdeki içerik",totalH+" sa"],["Ortalama ilerleme","%"+avg]
+  ].map(function(s){return '<div class="ds"><b>'+s[1]+'</b><span>'+s[0]+'</span></div>'}).join("");
+
+  function card(c){
+    var st=cstat(c), access=DB.hasCourseAccess(u.id,c.id), p=access?DB.courseProgress(u.id,c.id):0;
+    var free=c.lessons.find(function(l){return l.free});
+    var cover='<a class="cc-cover" style="'+coverStyle(c)+'" href="kurs.html?id='+c.id+'"><span class="cc-cat">'+esc(c.cat)+'</span>'+(access?'':'<span class="cc-lockbadge">'+svg("lock")+'</span>')+svg(c.icon)+'</a>';
+    var mid, btn;
+    if(access){
+      mid='<div class="cc-prog"><i style="width:'+p+'%"></i></div><div class="cc-prog-l"><span>İlerleme</span><span>%'+p+'</span></div>';
+      btn='<a class="btn '+(p>0?'btn-primary':'btn-gold')+'" href="izle.html?course='+c.id+'">'+(p>0?'Devam Et':'Eğitime Başla')+'</a>';
+    } else {
+      mid='<div class="cc-need">'+svg("lock")+' '+esc(minPkgFor(c.id))+' paketinde</div>';
+      btn='<a class="btn btn-gold" href="https://wa.me/905333478580" target="_blank" rel="noopener">Bilgi Al</a>'+(free?'<a class="btn btn-ghost" style="margin-top:8px" href="izle.html?course='+c.id+'&lesson='+free.id+'">İlk Dersi Ücretsiz İzle</a>':'');
+    }
+    return '<article class="ccard '+(access?'':'locked')+'">'+cover+
+      '<div class="cc-body"><h3>'+esc(c.title)+'</h3><p>'+esc(c.desc)+'</p>'+
+      '<div class="cc-meta"><span>'+svg("play")+' '+st.n+' ders</span><span>'+svg("clock")+' '+st.h+' saat</span></div>'+
+      mid+'<div class="cc-btn">'+btn+'</div></div></article>';
+  }
+
+  // Eğitimlerim (accessible)
+  var myWrap=$("#myCourses");
+  if(accessible.length){ myWrap.className="ccards"; myWrap.innerHTML=accessible.map(card).join(""); }
+  else { myWrap.innerHTML='<div class="empty">'+svg("crown")+'<p>Henüz erişebileceğin eğitim yok. Erişim için bizimle iletişime geç.</p><a class="btn btn-gold" href="https://wa.me/905333478580" target="_blank" rel="noopener" style="margin-top:14px">WhatsApp\'tan Yaz</a></div>'; }
+
+  // all courses
+  $("#allCourses").innerHTML=DB.courses().map(card).join("");
+
+  // continue watching (accessible course in progress)
+  var cont=null;
+  for(var i=0;i<accessible.length;i++){var c=accessible[i];var pp=DB.courseProgress(u.id,c.id);if(pp>0&&pp<100){var l=c.lessons.find(function(x){return !(prog[x.id]&&prog[x.id].completed)});if(l){cont={c:c,l:l,p:pp};break;}}}
+  if(cont){
+    $("#continueWrap").innerHTML='<div class="sec-title"><h2>Kaldığın yerden devam et</h2></div>'+
+      '<a class="cont" href="izle.html?course='+cont.c.id+'&lesson='+cont.l.id+'">'+
+      '<div class="ct-thumb" style="'+coverStyle(cont.c)+'"><span class="pl">'+svg("play")+'</span></div>'+
+      '<div class="ct-info"><small>'+esc(cont.c.title)+'</small><h3>'+esc(cont.l.title)+'</h3>'+
+      '<div class="cc-prog"><i style="width:'+cont.p+'%"></i></div><div class="cc-prog-l"><span>Kurs ilerlemen</span><span>%'+cont.p+'</span></div></div></a>';
+  }
+
+  // welcome toast after subscribing
+  if(new URLSearchParams(location.search).get("welcome")){
+    var t=$("#toast"); t.innerHTML=check+' Aboneliğin aktif, iyi eğitimler!'; t.classList.add("show"); setTimeout(function(){t.classList.remove("show")},2600);
+    history.replaceState(null,"","panel.html");
+  }
+})();
+</script>
+</body>
+</html>

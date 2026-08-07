@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1326">
+<title>Ders İzle | Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="player-page">
+<div class="nojs-warn" style="color:#fff"><h2>JavaScript gerekli</h2><p>Video oynatıcı için JavaScript açık olmalı.</p></div>
+
+<header class="player-top" id="ptop" hidden>
+  <div class="player-top-in">
+    <a class="pt-back" href="panel.html">⟵ Panelim</a>
+    <div class="pt-title" id="ptTitle"></div>
+    <div id="ptUser"></div>
+  </div>
+</header>
+
+<div class="player-grid" id="grid" hidden>
+  <div class="player-main">
+    <div class="player-video">
+      <video id="vid" controls playsinline preload="metadata"></video>
+    </div>
+    <div id="lockNote"></div>
+    <div class="player-meta">
+      <div class="pm-cat" id="pmCat"></div>
+      <h1 id="pmTitle"></h1>
+      <p id="pmDesc"></p>
+      <div class="player-actions">
+        <button class="btn btn-done" id="doneBtn"></button>
+        <div class="player-nav">
+          <button class="btn" id="prevBtn">⟵ Önceki</button>
+          <button class="btn" id="nextBtn">Sonraki ⟶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="player-side">
+    <div class="ps-head">
+      <b id="psCourse"></b>
+      <div class="cc-prog"><i id="psBar" style="width:0%"></i></div>
+      <small id="psMeta"></small>
+    </div>
+    <div class="ps-list" id="psList"></div>
+  </aside>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAuth()) return;
+  var u=Auth.current(), S=Shell;
+  var qs=new URLSearchParams(location.search);
+  var course=DB.course(qs.get("course"));
+  if(!course){ location.replace("panel.html"); return; }
+  var access=DB.hasCourseAccess(u.id,course.id);
+  function unlocked(l){ return access || l.free; }
+  function minPkgFor(cid){var pk=DB.packages().slice().sort(function(a,b){return a.priceMonthly-b.priceMonthly;}).find(function(p){return p.includedCourses.indexOf("all")>=0||p.includedCourses.indexOf(cid)>=0;});return pk?pk.name:"Artı 10 Pro";}
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  var prog=DB.progress(u.id);
+  function isDone(l){ return !!(DB.progress(u.id)[l.id]&&DB.progress(u.id)[l.id].completed); }
+
+  // pick current lesson: param → else first incomplete unlocked → else first
+  var lessons=course.lessons;
+  var cur=lessons.find(function(l){return l.id===qs.get("lesson")}) ||
+          lessons.find(function(l){return unlocked(l)&&!isDone(l)}) ||
+          lessons.find(function(l){return unlocked(l)}) || lessons[0];
+
+  document.getElementById("ptop").hidden=false;
+  document.getElementById("grid").hidden=false;
+  document.getElementById("ptUser").innerHTML='<div class="umenu" id="umenu"><button class="uavatar" id="uavatarBtn"><span>'+S.initials(u)+'</span></button>'+
+    '<div class="udrop"><div class="uhead"><b>'+esc(u.name)+'</b><small>'+esc(u.email)+'</small></div>'+
+    '<a href="panel.html">'+S.svg('home')+' Panelim</a><a href="kurs.html?id='+course.id+'">'+S.svg('book')+' Kurs Detayı</a>'+
+    (u.role==="admin"?'<a href="admin.html">'+S.svg('grid')+' Admin</a>':'')+
+    '<button class="ulogout" id="logoutBtn">'+S.svg('logout')+' Çıkış</button></div></div>';
+  S.wire();
+
+  var vid=document.getElementById("vid");
+  var saveT=0;
+
+  function renderSide(){
+    var p=DB.progress(u.id);
+    document.getElementById("psCourse").textContent=course.title;
+    var pct=DB.courseProgress(u.id,course.id);
+    document.getElementById("psBar").style.width=pct+"%";
+    var doneN=lessons.filter(isDone).length;
+    document.getElementById("psMeta").textContent=doneN+" / "+lessons.length+" ders tamamlandı · %"+pct;
+    document.getElementById("psList").innerHTML=lessons.map(function(l,i){
+      var lock=!unlocked(l), done=isDone(l), active=l.id===cur.id;
+      var num = done ? S.svg('check') : (lock ? S.svg('lock') : (i+1));
+      return '<button class="ps-row '+(active?'active':'')+' '+(done?'done':'')+'" data-l="'+l.id+'" '+(lock?'data-lock="1"':'')+'>'+
+        '<span class="pn">'+num+'</span><span class="pinfo"><b>'+esc(l.title)+'</b>'+
+        '<small>'+S.svg('clock')+' '+l.dur+(l.free?' · Ücretsiz':'')+'</small></span></button>';
+    }).join("");
+  }
+
+  function loadLesson(l, push){
+    cur=l;
+    document.getElementById("ptTitle").innerHTML=esc(l.title)+'<small>'+esc(course.title)+'</small>';
+    document.title=l.title+' · '+course.title+' | Artı 10';
+    document.getElementById("pmCat").textContent=course.cat+" · Ders "+(lessons.indexOf(l)+1);
+    document.getElementById("pmTitle").textContent=l.title;
+    document.getElementById("pmDesc").textContent=l.desc||"";
+    var lock=!unlocked(l);
+    var note=document.getElementById("lockNote");
+    if(lock){
+      vid.removeAttribute("src"); vid.load(); document.querySelector(".player-video").style.display="none";
+      note.innerHTML='<div class="lock-note">'+S.svg('lock')+'<p style="margin:8px 0 0">Bu ders üyelere özeldir. Erişim için bizimle iletişime geç.</p><a class="btn btn-gold" href="https://wa.me/905333478580" target="_blank" rel="noopener">WhatsApp\'tan Bilgi Al</a></div>';
+    } else {
+      note.innerHTML=""; document.querySelector(".player-video").style.display="";
+      vid.src=l.video;
+      var saved=(DB.progress(u.id)[l.id]||{}).t||0;
+      vid.load();
+      if(saved>3){ vid.addEventListener("loadedmetadata",function once(){ if(saved<vid.duration-5) vid.currentTime=saved; vid.removeEventListener("loadedmetadata",once); }); }
+    }
+    // done button
+    var db=document.getElementById("doneBtn"); paintDone();
+    // nav
+    var idx=lessons.indexOf(l);
+    document.getElementById("prevBtn").disabled=idx<=0;
+    document.getElementById("nextBtn").disabled=idx>=lessons.length-1;
+    renderSide();
+    if(push) history.replaceState(null,"","izle.html?course="+course.id+"&lesson="+l.id);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function paintDone(){
+    var db=document.getElementById("doneBtn"), done=isDone(cur), lock=!unlocked(cur);
+    db.style.display=lock?"none":"";
+    db.className="btn btn-done"+(done?" is-done":"");
+    db.innerHTML=(done?S.svg('check')+' Tamamlandı':'Tamamlandı olarak işaretle');
+  }
+
+  document.getElementById("doneBtn").addEventListener("click",function(){
+    DB.setProgress(u.id,cur.id,{completed:!isDone(cur)}); paintDone(); renderSide();
+  });
+  document.getElementById("prevBtn").addEventListener("click",function(){var i=lessons.indexOf(cur);if(i>0)loadLesson(lessons[i-1],true)});
+  document.getElementById("nextBtn").addEventListener("click",function(){var i=lessons.indexOf(cur);if(i<lessons.length-1)loadLesson(lessons[i+1],true)});
+  document.getElementById("psList").addEventListener("click",function(e){
+    var b=e.target.closest(".ps-row"); if(!b) return;
+    var l=DB.lesson(course.id,b.getAttribute("data-l")); if(l) loadLesson(l,true);
+  });
+  vid.addEventListener("error",function(){
+    if(!vid.getAttribute("src")) return;
+    document.getElementById("lockNote").innerHTML='<div class="lock-note"><p>Video şu anda yüklenemedi. Bağlantını kontrol edip tekrar dene.</p><button class="btn btn-gold" id="retryBtn">Tekrar Dene</button></div>';
+    var rb=document.getElementById("retryBtn"); if(rb) rb.addEventListener("click",function(){ loadLesson(cur,false); document.getElementById("lockNote").innerHTML=""; });
+  });
+  vid.addEventListener("timeupdate",function(){
+    var now=Date.now(); if(now-saveT>4000){ saveT=now; DB.setProgress(u.id,cur.id,{t:Math.floor(vid.currentTime)}); }
+  });
+  vid.addEventListener("ended",function(){
+    DB.setProgress(u.id,cur.id,{completed:true,t:0}); paintDone(); renderSide();
+    var i=lessons.indexOf(cur); if(i<lessons.length-1 && unlocked(lessons[i+1])) setTimeout(function(){loadLesson(lessons[i+1],true)},900);
+  });
+
+  loadLesson(cur,true);
+})();
+</script>
+</body>
+</html>

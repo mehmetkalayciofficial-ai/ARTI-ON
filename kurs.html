@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Kurs | Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="app">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2></div>
+<div id="top"></div>
+<main class="app-main" id="main" hidden>
+  <section class="course-head" id="chead"></section>
+  <div class="course-grid">
+    <div class="llist" id="llist"></div>
+    <aside class="cside" id="cside"></aside>
+  </div>
+</main>
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAuth()) return;
+  var u=Auth.current(), S=Shell;
+  S.svg=(function(o){return function(n,sw){return o(n,sw)};})(S.svg); // ensure lock available (in ICON now)
+  document.getElementById("top").innerHTML=S.memberTop("kurslar"); S.wire();
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var qs=new URLSearchParams(location.search);
+  var c=DB.course(qs.get("id"));
+  if(!c){ location.replace("panel.html"); return; }
+  document.getElementById("main").hidden=false;
+  document.title=c.title+" | Artı 10";
+  var access=DB.hasCourseAccess(u.id,c.id);
+  function unlocked(l){return access||l.free;}
+  var prog=DB.progress(u.id);
+  function isDone(l){return !!(prog[l.id]&&prog[l.id].completed);}
+  function minPkgFor(cid){var pk=DB.packages().slice().sort(function(a,b){return a.priceMonthly-b.priceMonthly;}).find(function(p){return p.includedCourses.indexOf("all")>=0||p.includedCourses.indexOf(cid)>=0;});return pk?pk.name:"Artı 10 Pro";}
+  var mins=c.lessons.reduce(function(m,l){var p=l.dur.split(":");return m+(+p[0])+(+p[1])/60;},0);
+  var hours=Math.round(mins/6)/10;
+  var pct=access?DB.courseProgress(u.id,c.id):0;
+  var needPkg=minPkgFor(c.id);
+
+  document.getElementById("chead").innerHTML=
+    '<div class="crumbs"><a href="panel.html">Panelim</a> / '+esc(c.cat)+'</div>'+
+    '<h1>'+esc(c.title)+'</h1><p>'+esc(c.desc)+'</p>'+
+    '<div class="ch-meta"><span>'+S.svg('play')+' '+c.lessons.length+' ders</span><span>'+S.svg('clock')+' '+hours+' saat içerik</span><span>'+S.svg('chart')+' '+esc(c.level)+'</span></div>'+
+    (access
+      ? '<a class="btn btn-gold btn-lg" href="izle.html?course='+c.id+'">'+(pct>0?'Eğitime Devam Et':'Eğitime Başla')+'</a>'
+      : '<a class="btn btn-gold btn-lg" href="https://wa.me/905333478580" target="_blank" rel="noopener">Erişim için Bilgi Al</a>');
+
+  document.getElementById("llist").innerHTML=
+    '<div class="ll-head"><span>Ders İçeriği</span><span class="tag-count">'+c.lessons.length+' ders · '+hours+' sa</span></div>'+
+    c.lessons.map(function(l,i){
+      var unl=unlocked(l), done=isDone(l);
+      var n = done ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' : (i+1);
+      var right = unl ? '<span class="lp">'+S.svg('play')+'</span>' : '<span class="badge-lock">'+S.svg('lock')+'</span>';
+      var free = l.free && !access ? '<span class="badge-free">Ücretsiz</span>' : '';
+      return '<button class="lrow '+(done?'done':'')+'" data-l="'+l.id+'" '+(unl?'':'data-lock="1"')+'>'+
+        '<span class="ln">'+n+'</span><span class="li"><b>'+esc(l.title)+'</b> '+free+'<small>'+S.svg('clock')+' '+l.dur+'</small></span>'+right+'</button>';
+    }).join("");
+
+  document.getElementById("cside").innerHTML=
+    (access
+      ? '<div class="cs-prog"><div class="cc-prog"><i style="width:'+pct+'%"></i></div><div class="cc-prog-l"><span>İlerlemen</span><span>%'+pct+'</span></div></div><a class="btn btn-gold btn-lg" href="izle.html?course='+c.id+'">'+(pct>0?'Devam Et':'Başla')+'</a>'
+      : '<div class="cc-need" style="margin-bottom:14px">'+S.svg('lock')+' Üyelere özel içerik</div><a class="btn btn-gold btn-lg" href="https://wa.me/905333478580" target="_blank" rel="noopener">WhatsApp\'tan Bilgi Al</a>')+
+    '<ul><li>'+S.svg('play')+' '+c.lessons.length+' video ders ('+hours+' saat)</li>'+
+    '<li>'+S.svg('check')+' Ömür boyu erişim, kaldığın yerden devam</li>'+
+    '<li>'+S.svg('check')+' Mobil ve masaüstünden izle</li>'+
+    '<li>'+S.svg('check')+' Topluluk ve soru-cevap desteği</li></ul>';
+
+  function go(l){ if(unlocked(l)) location.href="izle.html?course="+c.id+"&lesson="+l.id; else window.open("https://wa.me/905333478580","_blank"); }
+  document.getElementById("llist").addEventListener("click",function(e){var b=e.target.closest(".lrow");if(!b)return;var l=DB.lesson(c.id,b.getAttribute("data-l"));if(l)go(l);});
+})();
+</script>
+</body>
+</html>

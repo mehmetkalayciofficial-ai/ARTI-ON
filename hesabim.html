@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Hesabım | Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="app">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2></div>
+<div id="top"></div>
+<main class="app-main" id="main" hidden>
+  <div class="acct-head">
+    <div class="big-av" id="av"></div>
+    <div><b id="hName"></b><span class="role" id="role"></span></div>
+  </div>
+  <div class="acct-grid">
+    <div class="card">
+      <h2>Profil Bilgileri</h2>
+      <p class="csub">Ad ve e-posta adresini güncelleyebilirsin.</p>
+      <div class="alert ok" id="pAlert"></div>
+      <form id="profForm">
+        <div class="field"><label for="name">Ad Soyad</label><input class="inp" id="name" required></div>
+        <div class="field"><label for="email">E-posta</label><input class="inp" type="email" id="email" required></div>
+        <button class="btn btn-primary" type="submit">Kaydet</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Şifre Değiştir</h2>
+      <p class="csub">Güvenliğin için düzenli olarak şifreni güncelle.</p>
+      <div class="alert" id="sAlert"></div>
+      <form id="passForm">
+        <div class="field"><label for="cur">Mevcut şifre</label><input class="inp" type="password" id="cur" required></div>
+        <div class="field"><label for="np">Yeni şifre</label><input class="inp" type="password" id="np" placeholder="En az 6 karakter" required></div>
+        <div class="field"><label for="np2">Yeni şifre (tekrar)</label><input class="inp" type="password" id="np2" required></div>
+        <button class="btn btn-primary" type="submit">Şifreyi Güncelle</button>
+      </form>
+    </div>
+  </div>
+  <div class="card" style="margin-top:22px">
+    <h2>Hesap Özeti</h2>
+    <div class="acct-grid" style="margin-top:16px">
+      <ul style="display:grid;gap:12px">
+        <li class="muted" id="memberSince"></li>
+        <li class="muted" id="enrCount"></li>
+      </ul>
+      <div class="formbar" style="align-items:flex-start">
+        <button class="btn btn-ghost" id="logout">Çıkış Yap</button>
+        <button class="btn btn-ghost" id="reset" style="color:#c0476a;box-shadow:inset 0 0 0 1.5px #f0c4cf">Demo Verilerini Sıfırla</button>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAuth()) return;
+  var u=Auth.current(), S=Shell, $=function(s){return document.querySelector(s)};
+  $("#top").innerHTML=S.memberTop("hesabim"); S.wire();
+  $("#main").hidden=false;
+  function toast(m){var t=$("#toast");t.innerHTML=S.svg('check')+m;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},2200);}
+  function paint(){
+    u=Auth.current();
+    $("#av").textContent=S.initials(u);
+    $("#hName").textContent=u.name;
+    var r=$("#role"); r.textContent=u.role==="admin"?"Yönetici":"Üye"; r.className="role"+(u.role==="admin"?" admin":"");
+    $("#name").value=u.name; $("#email").value=u.email;
+    $("#memberSince").textContent="Üyelik tarihi: "+S.fmtDate(u.createdAt);
+    var pkg=DB.packageOf(u.id), sub=DB.subscription(u.id);
+    $("#enrCount").innerHTML= pkg
+      ? "Aktif paket: <b style='color:var(--ink)'>"+pkg.name+"</b> · "+DB.accessibleCourseIds(u.id).length+" eğitime erişim · yenileme "+S.fmtDate(sub.renewsAt)+" &nbsp;<a href='paketler.html' style='color:var(--gold-700);font-weight:600'>Yönet</a>"
+      : "Aktif paket yok · <a href='paketler.html' style='color:var(--gold-700);font-weight:600'>Paket seç</a>";
+  }
+  paint();
+  $("#profForm").addEventListener("submit",function(e){
+    e.preventDefault(); var pa=$("#pAlert"); pa.className="alert";
+    var name=$("#name").value.trim(), email=$("#email").value.trim().toLowerCase();
+    if(name.length<2){pa.className="alert err show";pa.textContent="Geçerli bir ad girin.";return;}
+    var ex=DB.userByEmail(email); if(ex&&ex.id!==u.id){pa.className="alert err show";pa.textContent="Bu e-posta başka bir hesapta kullanılıyor.";return;}
+    DB.updateUser(u.id,{name:name,email:email}); paint(); pa.className="alert ok show"; pa.textContent="Profil güncellendi."; toast("Profil kaydedildi");
+  });
+  $("#passForm").addEventListener("submit",function(e){
+    e.preventDefault(); var sa=$("#sAlert");
+    var cur=$("#cur").value, np=$("#np").value, np2=$("#np2").value;
+    if(cur!==u.password){sa.className="alert err show";sa.textContent="Mevcut şifre hatalı.";return;}
+    if(np.length<6){sa.className="alert err show";sa.textContent="Yeni şifre en az 6 karakter olmalı.";return;}
+    if(np!==np2){sa.className="alert err show";sa.textContent="Yeni şifreler eşleşmiyor.";return;}
+    DB.updateUser(u.id,{password:np}); $("#cur").value=$("#np").value=$("#np2").value=""; sa.className="alert ok show"; sa.textContent="Şifren güncellendi."; toast("Şifre güncellendi");
+  });
+  $("#logout").addEventListener("click",function(){Auth.logout()});
+  $("#reset").addEventListener("click",function(){ if(confirm("Tüm demo verileri (üyeler, ilerleme, kurs düzenlemeleri) sıfırlansın mı?")){ DB.reset(); Auth.logout(); } });
+})();
+</script>
+</body>
+</html>

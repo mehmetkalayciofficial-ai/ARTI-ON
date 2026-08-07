@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /giris.html
+Disallow: /kayit.html
+Disallow: /panel.html
+Disallow: /hesabim.html
+Disallow: /kurs.html
+Disallow: /izle.html
+Disallow: /paketler.html
+Disallow: /sifremi-unuttum.html
+Disallow: /admin.html
+Disallow: /admin-kurslar.html
+Disallow: /admin-kurs.html
+Disallow: /admin-paketler.html
+Disallow: /admin-uyeler.html
+
+Sitemap: https://www.arti10.com/sitemap.xml

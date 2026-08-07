@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Paketler | Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="app">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2></div>
+<div id="top"></div>
+<main class="app-main" id="main" hidden>
+  <div class="pak-head">
+    <h1>Eğitimlere erişim için bir paket seç</h1>
+    <p id="pakSub">Üyelik ücretsiz; kurs videolarına tam erişim için aylık abonelik paketlerinden birini seç. İstediğin zaman yükselt.</p>
+  </div>
+  <div class="pricing" id="pricing">
+    <div class="bill-toggle" role="tablist">
+      <button class="bt-opt on" data-bill="monthly" aria-pressed="true">Aylık</button>
+      <button class="bt-opt" data-bill="annual" aria-pressed="false">Yıllık <span class="save">~%22 indirim</span></button>
+    </div>
+    <div class="pkg-grid" id="pkgGrid"></div>
+  </div>
+  <p class="pak-note">Bu bir demo ödeme akışıdır; gerçek tahsilat yapılmaz, kart bilgisi saklanmaz. Artı 10 içerikleri yalnızca eğitim amaçlıdır; yatırım tavsiyesi değildir. <a href="mesafeli-satis-iade.html" style="color:var(--gold-700);font-weight:600">Mesafeli Satış & İade</a> koşulları geçerlidir.</p>
+</main>
+
+<div class="modal" id="modal">
+  <div class="mscrim" data-close></div>
+  <div class="mbox" style="max-width:480px">
+    <div class="mhead"><h3>Aboneliği Başlat</h3><button class="mclose" data-close>✕</button></div>
+    <div class="mbody">
+      <div id="checkoutSummary" style="background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px"></div>
+      <div class="field"><label>Kart üzerindeki ad</label><input class="inp" id="ccName" placeholder="Ad Soyad" value="Demo Kullanıcı"></div>
+      <div class="field"><label>Kart numarası</label><input class="inp" id="ccNum" placeholder="4242 4242 4242 4242" value="4242 4242 4242 4242"></div>
+      <div class="field row2">
+        <div class="field" style="margin:0"><label>Son kullanma</label><input class="inp" id="ccExp" placeholder="AA/YY" value="12/29"></div>
+        <div class="field" style="margin:0"><label>CVV</label><input class="inp" id="ccCvv" placeholder="123" value="123"></div>
+      </div>
+      <p class="hint" style="display:flex;gap:7px;align-items:center;color:var(--soft-ink)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Demo: gerçek tahsilat yapılmaz. Onayla, aboneliğin anında aktifleşsin.</p>
+    </div>
+    <div class="mfoot"><button class="btn btn-ghost" data-close>Vazgeç</button><button class="btn btn-gold" id="confirmBtn">Aboneliği Başlat</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAuth()) return;
+  var u=Auth.current(), S=Shell, $=function(s){return document.querySelector(s)};
+  $("#top").innerHTML=S.memberTop("paketler"); S.wire(); $("#main").hidden=false;
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  var fmt=function(n){return "₺"+n.toLocaleString("tr-TR")};
+  var period="monthly", pending=null;
+
+  var sub=DB.subscription(u.id), curPkg=sub?sub.packageId:null;
+  if(sub){ var pk=DB.package(curPkg); $("#pakSub").innerHTML='Şu an <b>'+esc(pk?pk.name:"")+'</b> paketindesin (yenileme: '+S.fmtDate(sub.renewsAt)+'). Dilersen paketini yükseltebilirsin.'; }
+
+  function render(){
+    var courseCount=DB.courses().length;
+    $("#pkgGrid").innerHTML=DB.packages().map(function(p){
+      var nCourses = p.includedCourses.indexOf("all")>=0 ? courseCount : p.includedCourses.length;
+      var perks='<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><b style="font-weight:700">'+nCourses+' video eğitime tam erişim</b></li>'+
+        p.perks.map(function(pk){return '<li>'+check+esc(pk)+'</li>';}).join("");
+      var isCur=p.id===curPkg;
+      var cta=isCur ? '<div class="cur-tag">'+check+' Mevcut Paketin</div>'
+        : '<button class="btn '+(p.popular?'btn-gold':'btn-primary')+' pkg-cta-buy" data-buy="'+p.id+'">'+(curPkg?'Bu Pakete Geç':'Paketi Seç')+'</button>';
+      return '<article class="pkg '+(p.popular?'popular':'')+' '+(isCur?'current':'')+'">'+
+        (p.popular?'<span class="pkg-ribbon">EN POPÜLER</span>':'')+
+        '<span class="pkg-accent" style="background:'+p.accent+'"></span>'+
+        '<div class="pkg-head"><h3>'+esc(p.name)+'</h3><p>'+esc(p.tagline)+'</p></div>'+
+        '<div class="pkg-price"><span class="price-m"><b>'+fmt(p.priceMonthly)+'</b><span class="per">/ay</span></span>'+
+        '<span class="price-a"><b>'+fmt(p.priceAnnualMonthly)+'</b><span class="per">/ay</span></span></div>'+
+        '<div class="pkg-billnote price-m-note">Aylık ödeme · istediğin zaman iptal</div>'+
+        cta+
+        '<ul class="pkg-perks">'+perks+'</ul>'+
+        '<div class="pkg-audience"><b>Kimler için?</b>'+esc(p.audience)+'</div></article>';
+    }).join("");
+  }
+  render();
+
+  // billing toggle
+  $$(".bt-opt"); function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+  document.querySelectorAll(".bt-opt").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll(".bt-opt").forEach(function(x){x.classList.remove("on")});
+      document.querySelectorAll(".bt-opt").forEach(function(x){x.setAttribute("aria-pressed","false")}); b.classList.add("on"); b.setAttribute("aria-pressed","true"); period=b.getAttribute("data-bill");
+      $("#pricing").classList.toggle("annual",period==="annual");
+      document.querySelectorAll(".price-m-note").forEach(function(n){n.textContent=period==="annual"?"Yıllık ödenir · aylık eşdeğer fiyat":"Aylık ödeme · istediğin zaman iptal";});
+    });
+  });
+
+  // checkout
+  var modal=$("#modal");
+  document.addEventListener("click",function(e){
+    var b=e.target.closest("[data-buy]"); if(!b) return;
+    pending=DB.package(b.getAttribute("data-buy"));
+    var price=period==="annual"?pending.priceAnnualMonthly:pending.priceMonthly;
+    var total=period==="annual"?pending.priceAnnualMonthly*12:pending.priceMonthly;
+    $("#checkoutSummary").innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:1.05rem">'+esc(pending.name)+'</b><div style="font-size:.84rem;color:var(--muted)">'+(period==="annual"?"Yıllık abonelik":"Aylık abonelik")+'</div></div>'+
+      '<div style="text-align:right"><b style="font-size:1.3rem;font-family:Plus Jakarta Sans">'+fmt(price)+'</b><span style="color:var(--muted)">/ay</span>'+
+      (period==="annual"?'<div style="font-size:.78rem;color:#1c7a4f;font-weight:700">Yıllık '+fmt(total)+' (1 kez)</div>':'')+'</div></div>';
+    modal.classList.add("open");
+  });
+  modal.addEventListener("click",function(e){if(e.target.closest("[data-close]"))modal.classList.remove("open")});
+  $("#confirmBtn").addEventListener("click",function(){
+    if(!pending) return;
+    DB.subscribe(u.id, pending.id, period);
+    modal.classList.remove("open");
+    var t=$("#toast"); t.innerHTML=check+' '+pending.name+' aboneliğin aktif!'; t.classList.add("show");
+    setTimeout(function(){ location.href="panel.html?welcome=1"; },1100);
+  });
+})();
+</script>
+</body>
+</html>

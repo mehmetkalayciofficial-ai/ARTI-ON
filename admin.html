@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1b38">
+<title>Admin · Genel Bakış · Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="admin">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2></div>
+<div class="admin-layout" id="layout">
+  <main class="admin-main">
+    <div id="atop"></div>
+    <div class="admin-body" id="body" hidden>
+      <div class="admin-stats" id="stats"></div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>Kurslar</h2><div class="ph-sub">Tüm eğitimler ve ders sayıları</div></div><a class="btn btn-gold btn-sm" href="admin-kurslar.html">Kursları Yönet</a></div>
+        <div class="atable-wrap"><table class="atable"><thead><tr><th>Kurs</th><th>Kategori</th><th>Ders</th><th>Süre</th></tr></thead><tbody id="cBody"></tbody></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>Son Üyeler</h2><div class="ph-sub">Platforma kayıtlı kullanıcılar</div></div><a class="btn btn-ghost btn-sm" href="admin-uyeler.html">Tümünü Gör</a></div>
+        <div class="atable-wrap"><table class="atable"><thead><tr><th>Üye</th><th>Rol</th><th>Paket</th><th>Tarih</th></tr></thead><tbody id="uBody"></tbody></table></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAdmin()) return;
+  var S=Shell;
+  document.getElementById("layout").insertAdjacentHTML("afterbegin",S.adminShell("dash"));
+  document.getElementById("atop").innerHTML=S.adminTop("Genel Bakış");
+  S.wire();
+  document.getElementById("body").hidden=false;
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var st=DB.stats();
+  document.getElementById("stats").innerHTML=[
+    ["users","Toplam Üye",st.members],["crown","Aktif Abone",st.subscribers],["card","Aylık Gelir (MRR)","₺"+st.mrr.toLocaleString("tr-TR")],["book","Kurs",st.courses]
+  ].map(function(s){return '<div class="astat"><div class="ai">'+S.svg(s[0])+'</div><b>'+s[2]+'</b><span>'+s[1]+'</span></div>'}).join("");
+
+  document.getElementById("cBody").innerHTML=DB.courses().map(function(c){
+    var mins=c.lessons.reduce(function(m,l){var p=l.dur.split(":");return m+(+p[0])+(+p[1])/60;},0);
+    return '<tr><td><a class="t-title" href="admin-kurs.html?id='+c.id+'" style="color:var(--gold-700)">'+esc(c.title)+'</a></td><td>'+esc(c.cat)+'</td><td>'+c.lessons.length+'</td><td>'+(Math.round(mins/6)/10)+' sa</td></tr>';
+  }).join("");
+
+  document.getElementById("uBody").innerHTML=DB.users().slice().reverse().map(function(u){
+    var pkg=DB.packageOf(u.id);
+    return '<tr><td><div class="cellflex"><span class="t-av">'+S.initials(u)+'</span><div><div class="t-title">'+esc(u.name)+'</div><div class="t-sub">'+esc(u.email)+'</div></div></div></td>'+
+      '<td><span class="pill-role '+u.role+'">'+(u.role==="admin"?"Yönetici":"Üye")+'</span></td>'+
+      '<td>'+(pkg?'<span class="pill-role member">'+esc(pkg.name)+'</span>':'<span class="t-sub">-</span>')+'</td><td class="t-sub">'+esc(u.createdAt)+'</td></tr>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

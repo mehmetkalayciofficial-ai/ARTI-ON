@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1b38">
+<title>Admin · Kurs Düzenle · Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="admin">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2></div>
+<div class="admin-layout" id="layout">
+  <main class="admin-main">
+    <div id="atop"></div>
+    <div class="admin-body" id="body" hidden>
+      <a href="admin-kurslar.html" class="btn btn-ghost btn-sm" style="margin-bottom:18px">⟵ Tüm Kurslar</a>
+      <div class="panel">
+        <div class="panel-head"><div><h2>Kurs Bilgileri</h2><div class="ph-sub">Eğitimin genel ayarları</div></div></div>
+        <div class="admin-body" style="padding:24px">
+          <div class="field"><label>Kurs adı</label><input class="inp" id="fTitle"></div>
+          <div class="field row2">
+            <div class="field" style="margin:0"><label>Kategori</label><input class="inp" id="fCat"></div>
+            <div class="field" style="margin:0"><label>Seviye</label><select class="inp" id="fLevel"><option>Tüm seviyeler</option><option>Başlangıç</option><option>Orta</option><option>İleri</option></select></div>
+          </div>
+          <div class="field row2">
+            <div class="field" style="margin:0"><label>İkon</label><select class="inp" id="fIcon"><option value="chart">Grafik</option><option value="building">Bina</option><option value="globe">Küre</option><option value="coin">Kripto</option><option value="brain">Psikoloji</option><option value="flow">İşlem</option><option value="grid">Sistem</option></select></div>
+            <div class="field" style="margin:0"><label>Renk</label><input class="inp" type="color" id="fAccent" style="padding:6px;height:46px"></div>
+          </div>
+          <div class="field"><label>Açıklama</label><textarea class="inp" id="fDesc"></textarea></div>
+          <button class="btn btn-primary" id="saveCourse">Kurs Bilgilerini Kaydet</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div><h2>Dersler / Videolar</h2><div class="ph-sub" id="lCount"></div></div><button class="btn btn-gold btn-sm" id="addLesson">+ Yeni Ders</button></div>
+        <div class="admin-body" style="padding:20px"><div id="lessons"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal">
+  <div class="mscrim" data-close></div>
+  <div class="mbox">
+    <div class="mhead"><h3 id="mTitle">Yeni Ders</h3><button class="mclose" data-close>✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="lId">
+      <div class="field"><label>Ders başlığı</label><input class="inp" id="lTitle" placeholder="Örn. Trend analizi"></div>
+      <div class="field row2">
+        <div class="field" style="margin:0"><label>Süre (dk:sn)</label><input class="inp" id="lDur" placeholder="10:24"></div>
+        <div class="field" style="margin:0;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:8px"><input type="checkbox" id="lFree"> Ücretsiz (üye olmayanlar da izleyebilir)</label></div>
+      </div>
+      <div class="field"><label>Video URL</label><input class="inp" id="lVideo" placeholder="https://...mp4"><span class="hint">Demo için örnek .mp4 bağlantısı. Gerçek aşamada kendi video barındırma servisiniz (Bunny, Vimeo vb.) gelir.</span></div>
+      <div class="field"><label>Açıklama</label><textarea class="inp" id="lDesc"></textarea></div>
+      <div class="alert err" id="mAlert"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-ghost" data-close>Vazgeç</button><button class="btn btn-gold" id="saveLesson">Kaydet</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAdmin()) return;
+  var S=Shell, $=function(s){return document.querySelector(s)};
+  $("#layout").insertAdjacentHTML("afterbegin",S.adminShell("kurslar"));
+  $("#atop").innerHTML=S.adminTop("Kurs Düzenle");
+  S.wire();
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function toast(m){var t=$("#toast");t.innerHTML=S.svg('check')+m;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},2000);}
+  var trash='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+  var edit='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+
+  var qs=new URLSearchParams(location.search), c=DB.course(qs.get("id"));
+  if(!c){ location.replace("admin-kurslar.html"); return; }
+  $("#body").hidden=false;
+
+  function fillCourse(){ $("#fTitle").value=c.title; $("#fCat").value=c.cat; $("#fLevel").value=c.level; $("#fIcon").value=c.icon; $("#fAccent").value=c.accent; $("#fDesc").value=c.desc; }
+  fillCourse();
+  $("#saveCourse").addEventListener("click",function(){
+    DB.updateCourse(c.id,{title:$("#fTitle").value.trim()||c.title,cat:$("#fCat").value.trim(),level:$("#fLevel").value,icon:$("#fIcon").value,accent:$("#fAccent").value,desc:$("#fDesc").value.trim()});
+    c=DB.course(c.id); toast("Kurs bilgileri kaydedildi");
+  });
+
+  function renderLessons(){
+    c=DB.course(c.id);
+    $("#lCount").textContent=c.lessons.length+" ders";
+    if(!c.lessons.length){ $("#lessons").innerHTML='<div class="empty">'+S.svg('play')+'<p>Henüz ders yok. "Yeni Ders" ile ekleyin.</p></div>'; return; }
+    $("#lessons").innerHTML=c.lessons.map(function(l,i){
+      return '<div class="led-row"><span class="led-n">'+(i+1)+'</span>'+
+        '<div><b style="display:block">'+esc(l.title)+'</b><small class="muted led-url" style="font-family:IBM Plex Mono;font-size:.76rem">'+esc(l.video).slice(0,46)+'…</small></div>'+
+        '<div class="muted" style="font-size:.85rem">'+l.dur+(l.free?' · <span style="color:#1c7a4f;font-weight:700">Ücretsiz</span>':'')+'</div>'+
+        '<div class="rowacts"><button class="iconbtn" data-edit="'+l.id+'">'+edit+'</button><button class="iconbtn danger" data-dell="'+l.id+'">'+trash+'</button></div></div>';
+    }).join("");
+  }
+  renderLessons();
+
+  var modal=$("#modal");
+  function openLesson(l){
+    $("#mAlert").className="alert err";
+    $("#mTitle").textContent=l?"Dersi Düzenle":"Yeni Ders";
+    $("#lId").value=l?l.id:""; $("#lTitle").value=l?l.title:""; $("#lDur").value=l?l.dur:""; $("#lFree").checked=l?!!l.free:false;
+    $("#lVideo").value=l?l.video:"https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"; $("#lDesc").value=l?l.desc:"";
+    modal.classList.add("open");
+  }
+  $("#addLesson").addEventListener("click",function(){openLesson(null)});
+  modal.addEventListener("click",function(e){if(e.target.closest("[data-close]"))modal.classList.remove("open")});
+  $("#saveLesson").addEventListener("click",function(){
+    var t=$("#lTitle").value.trim();
+    if(t.length<2){$("#mAlert").className="alert err show";$("#mAlert").textContent="Ders başlığı girin.";return;}
+    var data={title:t,dur:$("#lDur").value.trim()||"00:00",free:$("#lFree").checked,video:$("#lVideo").value.trim(),desc:$("#lDesc").value.trim()};
+    var id=$("#lId").value;
+    if(id) DB.updateLesson(c.id,id,data); else DB.addLesson(c.id,data);
+    modal.classList.remove("open"); renderLessons(); toast(id?"Ders güncellendi":"Ders eklendi");
+  });
+  $("#lessons").addEventListener("click",function(e){
+    var ed=e.target.closest("[data-edit]"); if(ed){ openLesson(DB.lesson(c.id,ed.getAttribute("data-edit"))); return; }
+    var dl=e.target.closest("[data-dell]"); if(dl){ var l=DB.lesson(c.id,dl.getAttribute("data-dell")); if(confirm('"'+l.title+'" dersi silinsin mi?')){ DB.removeLesson(c.id,l.id); renderLessons(); toast("Ders silindi"); } }
+  });
+})();
+</script>
+</body>
+</html>
