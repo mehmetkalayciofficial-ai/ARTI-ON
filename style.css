@@ -130,7 +130,10 @@ h1,h2,h3,h4{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;l
   -webkit-backdrop-filter:saturate(160%) blur(10px);backdrop-filter:saturate(160%) blur(10px);
   border-bottom:1px solid transparent;transition:box-shadow .35s var(--ease),border-color .35s,background .35s}
 .header.scrolled{background:rgba(255,255,255,.96);border-bottom-color:var(--line);box-shadow:var(--sh-xs)}
-.nav{display:flex;align-items:center;justify-content:space-between;gap:22px;height:74px;transition:height .35s var(--ease)}
+.nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:22px;height:74px;transition:height .35s var(--ease)}
+.nav>.brand{justify-self:start}
+.nav>.menu{justify-self:center}
+.nav>.nav-cta{justify-self:end}
 .header.scrolled .nav{height:64px}
 .brand{display:flex;align-items:center;gap:11px;flex-shrink:0}
 .brand img{width:42px;height:42px;border-radius:50%;box-shadow:var(--sh-xs);transition:width .35s,height .35s}
