@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');try{if(localStorage.getItem('arti10_theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1b38">
+<title>Admin · Toplantılar · Artı 10</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="app.css">
+</head>
+<body class="admin">
+<div class="nojs-warn"><h2>JavaScript gerekli</h2></div>
+<div class="admin-layout" id="layout">
+  <main class="admin-main">
+    <div id="atop"></div>
+    <div class="admin-body" id="body" hidden>
+      <div class="panel" style="background:linear-gradient(160deg,var(--navy-800),var(--navy-950));color:#fff;border:none">
+        <h2 style="color:#fff;margin-bottom:6px">Canlı toplantı sayacı</h2>
+        <p style="color:var(--on-navy-dim);font-size:.92rem;margin:0">Ana sayfadaki geri sayım buradan yönetilir. Toplantılar her hafta seçtiğin gün ve saatte otomatik tekrar eder; sayaç kendini yeniler. İstersen tek seferlik özel bir tarih de girebilirsin.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div><h2>Ücretsiz Toplantı</h2><div class="ph-sub">Herkese açık tanışma toplantısı</div></div><span id="prevFree" class="mono" style="color:var(--gold-700);font-weight:700;font-size:.9rem"></span></div>
+        <div class="field"><label>Başlık</label><input class="inp" id="f_title"></div>
+        <div class="field"><label>Açıklama</label><textarea class="inp" id="f_desc"></textarea></div>
+        <div class="field row2">
+          <div class="field" style="margin:0"><label>Haftalık gün</label>
+            <select class="inp" id="f_day"><option value="0">Pazar</option><option value="1">Pazartesi</option><option value="2">Salı</option><option value="3">Çarşamba</option><option value="4">Perşembe</option><option value="5">Cuma</option><option value="6">Cumartesi</option></select></div>
+          <div class="field" style="margin:0"><label>Saat (Türkiye)</label><input class="inp" type="time" id="f_time"></div>
+        </div>
+        <div class="field row2">
+          <div class="field" style="margin:0"><label>Tek seferlik tarih <span class="hint">(opsiyonel — doluysa bu hafta bunu kullanır)</span></label><input class="inp" type="datetime-local" id="f_oneoff"></div>
+          <div class="field" style="margin:0"><label>Katılım (Zoom) linki</label><input class="inp" id="f_zoom" placeholder="https://zoom.us/j/..."></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div><h2>Ücretli / Üyelere Özel Toplantı</h2><div class="ph-sub">Aktif üyelere yönelik analiz toplantısı</div></div><span id="prevPaid" class="mono" style="color:var(--gold-700);font-weight:700;font-size:.9rem"></span></div>
+        <div class="field"><label>Başlık</label><input class="inp" id="p_title"></div>
+        <div class="field"><label>Açıklama</label><textarea class="inp" id="p_desc"></textarea></div>
+        <div class="field row2">
+          <div class="field" style="margin:0"><label>Haftalık gün</label>
+            <select class="inp" id="p_day"><option value="0">Pazar</option><option value="1">Pazartesi</option><option value="2">Salı</option><option value="3">Çarşamba</option><option value="4">Perşembe</option><option value="5">Cuma</option><option value="6">Cumartesi</option></select></div>
+          <div class="field" style="margin:0"><label>Saat (Türkiye)</label><input class="inp" type="time" id="p_time"></div>
+        </div>
+        <div class="field row2">
+          <div class="field" style="margin:0"><label>Tek seferlik tarih <span class="hint">(opsiyonel)</span></label><input class="inp" type="datetime-local" id="p_oneoff"></div>
+          <div class="field" style="margin:0"><label>Katılım (Zoom) linki</label><input class="inp" id="p_zoom" placeholder="https://zoom.us/j/..."></div>
+        </div>
+      </div>
+
+      <div class="panel" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-gold" id="saveBtn">Kaydet ve Önizle</button>
+        <a class="btn btn-ghost" href="index.html#toplantilar" target="_blank" rel="noopener">Ana sayfada gör</a>
+        <button class="btn btn-min" id="resetBtn" style="color:var(--muted)">Varsayılana dön</button>
+        <span id="saveMsg" style="font-weight:600;color:#1d8a5f"></span>
+      </div>
+
+      <div class="panel" style="background:var(--gold-100)">
+        <p style="margin:0;font-size:.9rem;color:var(--gold-700)"><b>Not:</b> Yaptığın değişiklikler bu tarayıcıda anında önizlenir. Tüm ziyaretçilere yansıması için sitenin yeniden yayınlanması gerekir — değişiklik yaptığında bize "yayınla" demen yeterli. Haftalık tekrar sayesinde çoğu hafta hiçbir şey değiştirmene gerek kalmaz.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script src="app-shell.js"></script>
+<script src="meetings.js"></script>
+<script>
+(function(){
+  if(!Auth.requireAdmin())return;
+  var S=Shell;
+  document.getElementById("layout").insertAdjacentHTML("afterbegin",S.adminShell("toplantilar"));
+  document.getElementById("atop").innerHTML=S.adminTop("Toplantılar");
+  S.wire();
+  document.getElementById("body").hidden=false;
+
+  var F={title:'f_title',desc:'f_desc',day:'f_day',time:'f_time',oneoff:'f_oneoff',zoom:'f_zoom'};
+  var P={title:'p_title',desc:'p_desc',day:'p_day',time:'p_time',oneoff:'p_oneoff',zoom:'p_zoom'};
+  function el(id){return document.getElementById(id);}
+  function fill(map,m){el(map.title).value=m.title||'';el(map.desc).value=m.desc||'';el(map.day).value=String(m.weeklyDay|0);el(map.time).value=m.time||'21:00';el(map.oneoff).value=m.oneOff||'';el(map.zoom).value=m.zoom||'';}
+  function read(map,base){return{kind:base.kind,title:el(map.title).value.trim(),desc:el(map.desc).value.trim(),weeklyDay:+el(map.day).value,time:el(map.time).value||'21:00',oneOff:el(map.oneoff).value||'',zoom:el(map.zoom).value.trim(),note:base.note};}
+
+  var cfg=Meetings.config();
+  fill(F,cfg.free); fill(P,cfg.paid);
+
+  function preview(){
+    var c={free:read(F,Meetings.DEFAULT.free),paid:read(P,Meetings.DEFAULT.paid)};
+    el('prevFree').textContent='Sonraki: '+Meetings.fmt(Meetings.nextDate(c.free)).full;
+    el('prevPaid').textContent='Sonraki: '+Meetings.fmt(Meetings.nextDate(c.paid)).full;
+    return c;
+  }
+  preview();
+  ['f_day','f_time','f_oneoff','p_day','p_time','p_oneoff'].forEach(function(id){el(id).addEventListener('input',preview);});
+
+  el('saveBtn').addEventListener('click',function(){
+    var c=preview(); Meetings.save(c);
+    var m=el('saveMsg'); m.textContent='✓ Kaydedildi ve önizlendi.'; setTimeout(function(){m.textContent='';},4000);
+  });
+  el('resetBtn').addEventListener('click',function(){
+    Meetings.clear(); var d=Meetings.config(); fill(F,d.free); fill(P,d.paid); preview();
+    var m=el('saveMsg'); m.textContent='Varsayılana dönüldü.'; setTimeout(function(){m.textContent='';},4000);
+  });
+})();
+</script>
+</body>
+</html>

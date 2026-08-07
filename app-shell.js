@@ -58,7 +58,7 @@
     },
     adminShell: function (active) {
       var u = w.Auth.current();
-      var items = [["dash", "Genel Bakış", "chart", "admin.html"], ["kurslar", "Kurslar", "book", "admin-kurslar.html"], ["paketler", "Paketler", "crown", "admin-paketler.html"], ["uyeler", "Üyeler", "users", "admin-uyeler.html"]];
+      var items = [["dash", "Genel Bakış", "chart", "admin.html"], ["kurslar", "Kurslar", "book", "admin-kurslar.html"], ["paketler", "Paketler", "crown", "admin-paketler.html"], ["toplantilar", "Toplantılar", "clock", "admin-toplantilar.html"], ["uyeler", "Üyeler", "users", "admin-uyeler.html"]];
       var nav = items.map(function (n) { return '<a href="' + n[3] + '" class="' + (n[0] === active ? "on" : "") + '">' + svg(n[2]) + "<span>" + n[1] + "</span></a>"; }).join("");
       return '<aside class="admin-side" id="adminSide"><div class="admin-side-in">' +
         '<button class="admin-close" id="adminClose" aria-label="Menüyü kapat">✕</button>' + BRAND.replace("ashell-brand", "ashell-brand admin") +
