@@ -694,3 +694,12 @@ html.dark .save{background:#0d2b1c;color:#5fd39a}
 .ci-qr{display:flex;align-items:center;gap:14px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
 .ci-qr img{border-radius:10px;background:#fff;padding:6px}
 .ci-qr b{color:#fff;display:block;font-size:.92rem}.ci-qr span{color:var(--on-navy-dim);font-size:.8rem}
+
+/* Menü / kart rozetleri (Ücretsiz / Exclusive) */
+.dd-badge{display:inline-block;font-size:.6rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.dd-badge.free{background:#0d2b1c;color:#5fd39a}
+.dd-badge.excl{background:linear-gradient(135deg,var(--gold-400),var(--gold-600));color:#2a2006}
+html.dark .dd-badge.free{background:#0d2b1c;color:#5fd39a}
+.tg-badge{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:99px;margin-left:8px}
+.tg-badge.free{background:#0d2b1c;color:#5fd39a}
+.tg-badge.excl{background:linear-gradient(135deg,var(--gold-400),var(--gold-600));color:#2a2006}
