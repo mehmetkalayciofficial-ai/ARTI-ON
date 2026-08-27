@@ -78,13 +78,14 @@ h1,h2,h3,h4{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;l
 .section.navy.trust-photo::before{
   content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
   background:
-    linear-gradient(96deg,var(--navy-950) 4%,rgba(10,21,48,.82) 34%,rgba(10,21,48,.42) 60%,rgba(10,21,48,.62) 100%),
-    linear-gradient(0deg,var(--navy-950) 1%,transparent 26%,transparent 72%,rgba(10,21,48,.55) 100%),
-    url("trust-bg.webp") center right/cover no-repeat;
+    linear-gradient(180deg,rgba(10,21,48,.72),rgba(10,21,48,.6) 45%,rgba(10,21,48,.8)),
+    url("trust-bg.webp") center center/cover no-repeat;
 }
 .section.navy.trust-photo>.wrap{position:relative;z-index:1}
-.trust-photo .section-head{margin-inline:0;text-align:left;max-width:600px}
+.trust-photo .section-head{margin-inline:auto;text-align:center;max-width:760px}
 .trust-photo .kicker::after{display:none}
+.trust-photo .trust{text-align:center}
+.trust-photo .trust .ti{margin-inline:auto}
 @media(max-width:760px){
   .section.navy.trust-photo::before{
     background:
@@ -521,7 +522,7 @@ html.dark .blog-card{background:var(--soft)}
 /* ============================================================
    Community cards (Telegram/WhatsApp) — navy section
    ============================================================ */
-.tg-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tg-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:820px;margin-inline:auto}
 @media(max-width:880px){.tg-cards{grid-template-columns:1fr}}
 .tg-card{display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:var(--r-md);
   background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
@@ -530,8 +531,8 @@ html.dark .blog-card{background:var(--soft)}
 .tg-card .ti{flex-shrink:0;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(200,155,44,.16);color:var(--gold-300)}
 .tg-card .ti svg{width:22px;height:22px}
 .tg-card.wa .ti{background:rgba(37,211,102,.15);color:#4be08a}
-.tg-card .tt{min-width:0}
-.tg-card .tt b{display:block;color:#fff;font-size:.98rem;font-family:"Plus Jakarta Sans";font-weight:700}
+.tg-card .tt{min-width:0;flex:1}
+.tg-card .tt b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;row-gap:4px;color:#fff;font-size:.98rem;font-family:"Plus Jakarta Sans";font-weight:700}
 .tg-card .tt small{color:var(--on-navy-dim);font-size:.8rem}
 .tg-card .ta{margin-left:auto;color:var(--gold-300);font-size:1.2rem;transition:transform .3s var(--ease)}
 .tg-card:hover .ta{transform:translateX(4px)}
@@ -669,7 +670,7 @@ html.dark .save{background:#0d2b1c;color:#5fd39a}
 .edu-3 .edu .etags{margin-top:auto}
 
 /* İletişim formu */
-.contact-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(18px,2.5vw,30px);align-items:start}
+.contact-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(18px,2.5vw,30px);align-items:stretch}
 @media(max-width:860px){.contact-grid{grid-template-columns:1fr}}
 .contact-form{background:var(--bg);border:1px solid var(--line);border-radius:var(--r-xl);padding:clamp(22px,3vw,34px);box-shadow:var(--sh-md)}
 .cf-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -688,7 +689,7 @@ html.dark .save{background:#0d2b1c;color:#5fd39a}
 .cf-status.ok{color:#1d8a5f}.cf-status.err{color:#d63f5c}
 .cf-note{margin-top:12px;font-size:.78rem;color:var(--soft-ink);text-align:center}
 .contact-info{background:linear-gradient(160deg,var(--navy-800),var(--navy-950));color:var(--on-navy);
-  border-radius:var(--r-xl);padding:clamp(22px,3vw,30px);box-shadow:var(--sh-md)}
+  border-radius:var(--r-xl);padding:clamp(22px,3vw,30px);box-shadow:var(--sh-md);display:flex;flex-direction:column}
 .contact-info h3{color:#fff;font-size:1.15rem;margin-bottom:18px}
 .ci-item{display:flex;align-items:center;gap:14px;padding:12px;border-radius:var(--r-md);margin-bottom:10px;
   background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);transition:background .25s var(--ease),transform .25s var(--ease)}
@@ -698,7 +699,7 @@ html.dark .save{background:#0d2b1c;color:#5fd39a}
 .ci-ic.wa{background:#25623f}.ci-ic.tg{background:#2b6ea8}.ci-ic.mail{background:var(--gold-600);color:#241a04}
 .ci-t{display:flex;flex-direction:column;line-height:1.3}
 .ci-t b{color:#fff;font-size:.96rem}.ci-t small{color:var(--on-navy-dim);font-size:.82rem}
-.ci-qr{display:flex;align-items:center;gap:14px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
+.ci-qr{display:flex;align-items:center;gap:14px;margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)}
 .ci-qr img{border-radius:10px;background:#fff;padding:6px}
 .ci-qr b{color:#fff;display:block;font-size:.92rem}.ci-qr span{color:var(--on-navy-dim);font-size:.8rem}
 
@@ -707,7 +708,7 @@ html.dark .save{background:#0d2b1c;color:#5fd39a}
 .dd-badge.free{background:#0d2b1c;color:#5fd39a}
 .dd-badge.excl{background:linear-gradient(135deg,var(--gold-400),var(--gold-600));color:#2a2006}
 html.dark .dd-badge.free{background:#0d2b1c;color:#5fd39a}
-.tg-badge{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:99px;margin-left:8px}
+.tg-badge{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:99px}
 .tg-badge.free{background:#0d2b1c;color:#5fd39a}
 .tg-badge.excl{background:linear-gradient(135deg,var(--gold-400),var(--gold-600));color:#2a2006}
 
@@ -722,6 +723,14 @@ html.dark .dd-badge.free{background:#0d2b1c;color:#5fd39a}
 .edu-cover .edu-cnum{position:absolute;bottom:12px;left:14px;z-index:2;color:#fff;font-family:"Plus Jakarta Sans";font-weight:800;font-size:1.05rem;text-shadow:0 2px 8px rgba(0,0,0,.5)}
 .edu-body{padding:22px 24px 24px;display:flex;flex-direction:column;flex:1}
 .edu.edu-img h3{font-size:1.18rem;margin-bottom:.45em}
-.edu.edu-img .etags{margin-top:12px}
-.edu.edu-img .arrow-link{margin-top:16px}
+.edu.edu-img .etags{margin-top:auto;padding-top:16px}
+/* Detayları gör — düzgün buton, kartın en altında hizalı */
+.edu-btn{display:flex;align-items:center;justify-content:center;gap:.5em;width:100%;margin-top:14px;
+  padding:.85em 1.2em;border-radius:var(--r-md);font-weight:700;font-size:.9rem;
+  background:var(--soft);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-2);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),background .3s var(--ease),color .3s var(--ease)}
+.edu-btn svg{width:1.05em;height:1.05em;transition:transform .3s var(--ease)}
+.edu-btn:hover{background:linear-gradient(135deg,var(--gold-400),var(--gold-600));color:#2a2006;box-shadow:0 10px 22px -10px rgba(200,155,44,.55);transform:translateY(-2px)}
+.edu-btn:hover svg{transform:translateX(4px)}
 html.dark .edu.edu-img{background:var(--soft)}
+html.dark .edu-btn{background:var(--soft-2)}
